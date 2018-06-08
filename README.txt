@@ -3,7 +3,7 @@ Yet Another Implementation For Lua Strict Tables
 
 'tstrict' enforces modes on table members. New members must be defined
 with such a mode or a table can be constructed with a default
-definition mode.  Assigning 'nil' to a variable will undefine it and
+definition mode. Assigning 'nil' to a variable will undefine it and
 any future use must redefine it.
 
 Strictness checking can be disabled, Then the performance impact
@@ -16,22 +16,22 @@ throw an 'error()' when a violation is detected.
 'tstrict' adds these modes:
 
 VAR::
-  Like normal Lua variables, once defined it can be assigned to any
-  other value. Writing to undefined members will raise an error.
+Like normal Lua variables, once defined it can be assigned to any
+other value. Writing to undefined members will raise an error.
 
 TYPED::
-  Any assignment must have the same type than the current value.
+Any assignment must have the same type than the current value.
 
 CONST::
-  Once defined it can not be altered.
+Once defined it can not be altered.
 
 CONSTRAIN::
-  Associates a test function to a member which checks for validity of
-  a value upon assignment.
+Associates a test function to a member which checks for validity of
+a value upon assignment.
 
 FINAL::
-  Mark tables final will lock it's contents. All attempts changing
-  it (indcluding erasing memnbers) raise an error.
+Mark tables final will lock it's contents. All attempts changing
+it (indcluding erasing memnbers) raise an error.
 
 Strict checking is applied to tables by calling an augmenting function
 from the tstrict module upon them. It is possible to change the tables
@@ -39,72 +39,74 @@ mode by apply the function again (unless the table was marked as
 'final').
 
 +tstrict.strict(table, init, default, force)+::
-  +init+:::
-    The definition mode for all members already existing in the table.
-    it can be nil, 'TYPED', 'CONST' or a Lua function for defining a
-    constraint.  'nil' means the most basic level of strictness
-    checking variables must be defined with '.VAR' but no other
-    restrictions are apply.
 
-  +default+:::
-    The default for new members. When 'nil' no default exists and
-    members must be explicit defined. 'TYPED', 'CONST' and a lua
-    function select the respective mode. 'FINAL' will reject adding
-    new members to the table.
++init+:::
+The definition mode for all members already existing in the table.
+it can be nil, 'TYPED', 'CONST' or a Lua function for defining a
+constraint. 'nil' means the most basic level of strictness
+checking variables must be defined with '.VAR' but no other
+restrictions are apply.
 
-  +force+:::
-    Enforces the mode given as +default+ and disables explicit definitons
-    with the '.VAR', '.TYPED', '.CONST' or '.CONSTRAIN' keywords.
++default+:::
+The default for new members. When 'nil' no default exists and
+members must be explicit defined. 'TYPED', 'CONST' and a lua
+function select the respective mode. 'FINAL' will reject adding
+new members to the table.
 
-  Returns 'table' augmented with strict checking.
++force+:::
+Enforces the mode given as +default+ and disables explicit definitons
+with the '.VAR', '.TYPED', '.CONST' or '.CONSTRAIN' keywords.
 
-  In the simplest case, init and default are nil then strict
-  checking can be added like this:
+Returns 'table' augmented with strict checking.
 
-  +local my = strict {}+
+In the simplest case, init and default are nil then strict
+checking can be added like this:
+
+ local my = strict {}
 
 
 +tstrict.typed(table)+::
-  Equivalent to +strict(table, 'TYPED')+.
-  Existing members become 'typed', new members must be explicitly
-  defined.
+Equivalent to +strict(table, 'TYPED')+.
+Existing members become 'typed', new members must be explicitly
+defined.
 
 +tstrict.const(table)+::
-  Equivalent to +strict(table, 'CONST')+.
-  Existing members become 'const', new members must be explicitly
-  defined.
+Equivalent to +strict(table, 'CONST')+.
+Existing members become 'const', new members must be explicitly
+defined.
 
 +tstrict.typed_def(table)+::
-  Equivalent to +strict(table, 'TYPED', 'TYPED')+.
-  Makes existing and new members 'typed' unless otherwise defined.
+Equivalent to +strict(table, 'TYPED', 'TYPED')+.
+Makes existing and new members 'typed' unless otherwise defined.
 
-  TIP: this is a good starting point for augmenting tables in
-  existing programs. It may catch type errors while being least
-  intrusive to existing codebases.
+TIP: this is a good starting point for augmenting tables in
+existing programs. It may catch type errors while being least
+intrusive to existing codebases.
 
 +tstrict.const_def(table)+::
-  Equivalent to +strict(table, 'CONST', 'CONST')+.
-  Allows easy adding new members to a table but no mutations.
+Equivalent to +strict(table, 'CONST', 'CONST')+.
+Allows easy adding new members to a table but no mutations.
 
 +tstrict.final(table)+::
-  Equivalent to +strict(table, 'CONST', 'FINAL', true)+.
-  Locks the table down, nothing can be changed. A good choice for
-  module interfaces.
+Equivalent to +strict(table, 'CONST', 'FINAL', true)+.
+Locks the table down, nothing can be changed. A good choice for
+module interfaces.
 
 For to add strict checking to a table the tstrict constructor must be
-applied to a table.  This 'tstrict' constructor will add or modify the
+applied to a table. This 'tstrict' constructor will add or modify the
 metatable of the given table which check for validity of a value upon
 assignment.
 
 The metatable gets functions for '__index', '__newindex', '__len',
-''__ipairs' and '__pairs' added.  Further it adds the definiton keywords
+''__ipairs' and '__pairs' added. Further it adds the definiton keywords
 'VAR', 'TYPED', 'CONST' and 'CONSTRAIN' to the augmented table.
 
 When tstrict is disabled, the definition keywords point to the table
 itself and no metatable is added.
 
+
 Sequences
-~~~~~~~~~
+---------
 
 Lua handles table members indexed by integers somewhat
 special. Internally tables have a 'array' part which handles all
@@ -124,9 +126,21 @@ operator on a sparse array will raise an error.
 Note that once the indices become sparse there is no way back to
 making it continous again.
 
+The lua table library handles such sequences with 'raw' methods.  'tstrict'
+patches 'table.insert', 'table.concat', 'table.remove', 'table.sort' and
+'table.unpack' to work correctly on strict tables as well.
+
+For reference, the tstrict api retains the original functions as
+'table_insert', 'table_concat', 'table_remove', 'table_sort' and
+'table_unpack'. But these must not be used on strict tables.
+
+Patching the table library is unconditionally done when tstrict is used this
+is necessary because tstrict can be enabled/disabled locally and every case
+needs to be covered.
+
 
 Example Usage
-~~~~~~~~~~~~~
+-------------
 
 The canonical usage looks like (including examples for failure):
 
@@ -199,7 +213,75 @@ when a values is accepted..
 
 
 Notes
-~~~~~
+-----
 
 Tstrict is under development, features and API are still in flux but
 will eventually stabilize for a 1.0 version.
+
+
+Limitations
+-----------
+
+* Tstrict does not protect the metatables of augmented tables. This
+  would be hard to implement and the rationale here is that whoever
+  alters metatables knows what he is doing. In future some protections
+  may be implemented as much as feasible.
+
+* Some low-level constructs like 'setraw()' can not be incepted.
+  Use them wisely, same rationale as above.
+
+
+License
+-------
+
+'tstrict' is distributed under the MIT/X11 license as noted in the
+accompanied 'COPYING' file.
+
+
+About The Infrastructure
+------------------------
+
+Issues
+~~~~~~
+
+For the time being send bug reports, feature suggestions and other
+issues by mail to "Christian Thäter <ct.tstrict@pipapo.org>".
+
+
+Git Repository
+~~~~~~~~~~~~~~
+
+The public git repository can be cloned by:
+
+ git clone git://git.pipapo.org/tstrict
+
+
+Documentation
+~~~~~~~~~~~~~
+
+The Documentation in README.txt is written in asciidoc.
+To generate 'README.html' use:
+
+ asciidoc README.txt
+
+'README.html' is included in revision control and updated lazily.
+This makes the documentation available as webpage under:
+
+ http://git.pipapo.org/?p=tstrict;a=blob_plain;f=README.html
+
+To generate a PDF use:
+
+ a2x -L -k -v --dblatex-opts "-P latex.output.revhistory=0" README.txt
+
+
+Testing
+~~~~~~~
+
+There is a 'test_tstrict.lua' included. Tests are coded ad-hoc and can
+be run by:
+
+ lua test_tstrict.lua
+
+and shall result in no errors/failures.
+
+

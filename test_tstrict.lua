@@ -366,3 +366,65 @@ do
 end
 
 
+do
+  print "table library, legacy"
+  local tbl =  {'a', 'b', 'c'}
+  table.insert(tbl, 'd')
+
+  assert(#tbl == 4)
+  texpect(tbl, {'a', 'b', 'c', 'd'})
+end
+
+do
+  print "table library, strict"
+  local tbl = strict {'a', 'b', 'c'}
+  table.insert(tbl, 'd')
+
+  assert(#tbl == 4)
+  texpect(tbl, {'a', 'b', 'c', 'd'})
+end
+
+
+do
+  print "table library"
+  local tbl = const {'a', 'b', 'c'}
+  table.insert(tbl, 'd')
+
+  assert(#tbl == 4)
+  texpect(tbl, {'a', 'b', 'c', 'd'})
+
+  assert(table.concat(tbl, '+') == "a+b+c+d")
+
+  local r = table.remove(tbl, 3)
+  assert(r == 'c')
+  assert(#tbl == 3)
+  texpect(tbl, {'a', 'b', 'd'})
+
+  local tbl = const {'c', 'b', 'd', 'a'}
+  table.sort(tbl)
+  texpect(tbl, {'a', 'b', 'c', 'd'})
+
+  texpect({table.unpack(tbl)}, {'a', 'b', 'c', 'd'})
+end
+
+
+do
+  print "table library, final"
+  local tbl = final {'c', 'b', 'a'}
+  local ok,result = pcall(table.insert, tbl, 'd')
+  assert(not DEBUG or not ok)
+  assert(not DEBUG or result:match("readonly table"))
+
+  local tbl = final {'c', 'b', 'a'}
+  local ok,result = pcall(table.remove, tbl, 2)
+  assert(not DEBUG or not ok)
+  assert(not DEBUG or result:match("readonly table"))
+
+  local tbl = final {'c', 'b', 'a'}
+  local ok,result = pcall(table.sort, tbl)
+  assert(not DEBUG or not ok)
+  assert(not DEBUG or result:match("readonly table"))
+
+  local tbl = final {'c', 'b', 'a'}
+  texpect({table.unpack(tbl)}, {'c', 'b', 'a'})
+end

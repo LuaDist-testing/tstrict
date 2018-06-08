@@ -740,7 +740,7 @@ asciidoc.install();
 <div class="sectionbody">
 <div class="paragraph"><p><em>tstrict</em> enforces modes on table members. New members must be defined
 with such a mode or a table can be constructed with a default
-definition mode.  Assigning <em>nil</em> to a variable will undefine it and
+definition mode. Assigning <em>nil</em> to a variable will undefine it and
 any future use must redefine it.</p></div>
 <div class="paragraph"><p>Strictness checking can be disabled, Then the performance impact
 should be negligible. Even with strictness checking enabled, it is
@@ -754,8 +754,8 @@ VAR
 </dt>
 <dd>
 <p>
-  Like normal Lua variables, once defined it can be assigned to any
-  other value. Writing to undefined members will raise an error.
+Like normal Lua variables, once defined it can be assigned to any
+other value. Writing to undefined members will raise an error.
 </p>
 </dd>
 <dt class="hdlist1">
@@ -763,7 +763,7 @@ TYPED
 </dt>
 <dd>
 <p>
-  Any assignment must have the same type than the current value.
+Any assignment must have the same type than the current value.
 </p>
 </dd>
 <dt class="hdlist1">
@@ -771,7 +771,7 @@ CONST
 </dt>
 <dd>
 <p>
-  Once defined it can not be altered.
+Once defined it can not be altered.
 </p>
 </dd>
 <dt class="hdlist1">
@@ -779,8 +779,8 @@ CONSTRAIN
 </dt>
 <dd>
 <p>
-  Associates a test function to a member which checks for validity of
-  a value upon assignment.
+Associates a test function to a member which checks for validity of
+a value upon assignment.
 </p>
 </dd>
 <dt class="hdlist1">
@@ -788,8 +788,8 @@ FINAL
 </dt>
 <dd>
 <p>
-  Mark tables final will lock it&#8217;s contents. All attempts changing
-  it (indcluding erasing memnbers) raise an error.
+Mark tables final will lock it&#8217;s contents. All attempts changing
+it (indcluding erasing memnbers) raise an error.
 </p>
 </dd>
 </dl></div>
@@ -808,11 +808,11 @@ mode by apply the function again (unless the table was marked as
 </dt>
 <dd>
 <p>
-    The definition mode for all members already existing in the table.
-    it can be nil, <em>TYPED</em>, <em>CONST</em> or a Lua function for defining a
-    constraint.  <em>nil</em> means the most basic level of strictness
-    checking variables must be defined with <em>.VAR</em> but no other
-    restrictions are apply.
+The definition mode for all members already existing in the table.
+it can be nil, <em>TYPED</em>, <em>CONST</em> or a Lua function for defining a
+constraint. <em>nil</em> means the most basic level of strictness
+checking variables must be defined with <em>.VAR</em> but no other
+restrictions are apply.
 </p>
 </dd>
 <dt class="hdlist1">
@@ -820,10 +820,10 @@ mode by apply the function again (unless the table was marked as
 </dt>
 <dd>
 <p>
-    The default for new members. When <em>nil</em> no default exists and
-    members must be explicit defined. <em>TYPED</em>, <em>CONST</em> and a lua
-    function select the respective mode. <em>FINAL</em> will reject adding
-    new members to the table.
+The default for new members. When <em>nil</em> no default exists and
+members must be explicit defined. <em>TYPED</em>, <em>CONST</em> and a lua
+function select the respective mode. <em>FINAL</em> will reject adding
+new members to the table.
 </p>
 </dd>
 <dt class="hdlist1">
@@ -831,33 +831,29 @@ mode by apply the function again (unless the table was marked as
 </dt>
 <dd>
 <p>
-    Enforces the mode given as <code>default</code> and disables explicit definitons
-    with the <em>.VAR</em>, <em>.TYPED</em>, <em>.CONST</em> or <em>.CONSTRAIN</em> keywords.
+Enforces the mode given as <code>default</code> and disables explicit definitons
+with the <em>.VAR</em>, <em>.TYPED</em>, <em>.CONST</em> or <em>.CONSTRAIN</em> keywords.
 </p>
-<div class="literalblock">
-<div class="content">
-<pre><code>Returns 'table' augmented with strict checking.</code></pre>
-</div></div>
-<div class="literalblock">
-<div class="content">
-<pre><code>In the simplest case, init and default are nil then strict
-checking can be added like this:</code></pre>
-</div></div>
-<div class="literalblock">
-<div class="content">
-<pre><code>+local my = strict {}+</code></pre>
-</div></div>
 </dd>
 </dl></div>
 </dd>
+</dl></div>
+<div class="paragraph"><p>Returns <em>table</em> augmented with strict checking.</p></div>
+<div class="paragraph"><p>In the simplest case, init and default are nil then strict
+checking can be added like this:</p></div>
+<div class="literalblock">
+<div class="content">
+<pre><code>local my = strict {}</code></pre>
+</div></div>
+<div class="dlist"><dl>
 <dt class="hdlist1">
 <code>tstrict.typed(table)</code>
 </dt>
 <dd>
 <p>
-  Equivalent to <code>strict(table, <em>TYPED</em>)</code>.
-  Existing members become <em>typed</em>, new members must be explicitly
-  defined.
+Equivalent to <code>strict(table, <em>TYPED</em>)</code>.
+Existing members become <em>typed</em>, new members must be explicitly
+defined.
 </p>
 </dd>
 <dt class="hdlist1">
@@ -865,9 +861,9 @@ checking can be added like this:</code></pre>
 </dt>
 <dd>
 <p>
-  Equivalent to <code>strict(table, <em>CONST</em>)</code>.
-  Existing members become <em>const</em>, new members must be explicitly
-  defined.
+Equivalent to <code>strict(table, <em>CONST</em>)</code>.
+Existing members become <em>const</em>, new members must be explicitly
+defined.
 </p>
 </dd>
 <dt class="hdlist1">
@@ -875,23 +871,29 @@ checking can be added like this:</code></pre>
 </dt>
 <dd>
 <p>
-  Equivalent to <code>strict(table, <em>TYPED</em>, <em>TYPED</em>)</code>.
-  Makes existing and new members <em>typed</em> unless otherwise defined.
+Equivalent to <code>strict(table, <em>TYPED</em>, <em>TYPED</em>)</code>.
+Makes existing and new members <em>typed</em> unless otherwise defined.
 </p>
-<div class="literalblock">
-<div class="content">
-<pre><code>TIP: this is a good starting point for augmenting tables in
-existing programs. It may catch type errors while being least
-intrusive to existing codebases.</code></pre>
-</div></div>
 </dd>
+</dl></div>
+<div class="admonitionblock">
+<table><tr>
+<td class="icon">
+<div class="title">Tip</div>
+</td>
+<td class="content">this is a good starting point for augmenting tables in
+existing programs. It may catch type errors while being least
+intrusive to existing codebases.</td>
+</tr></table>
+</div>
+<div class="dlist"><dl>
 <dt class="hdlist1">
 <code>tstrict.const_def(table)</code>
 </dt>
 <dd>
 <p>
-  Equivalent to <code>strict(table, <em>CONST</em>, <em>CONST</em>)</code>.
-  Allows easy adding new members to a table but no mutations.
+Equivalent to <code>strict(table, <em>CONST</em>, <em>CONST</em>)</code>.
+Allows easy adding new members to a table but no mutations.
 </p>
 </dd>
 <dt class="hdlist1">
@@ -899,25 +901,26 @@ intrusive to existing codebases.</code></pre>
 </dt>
 <dd>
 <p>
-  Equivalent to <code>strict(table, <em>CONST</em>, <em>FINAL</em>, true)</code>.
-  Locks the table down, nothing can be changed. A good choice for
-  module interfaces.
+Equivalent to <code>strict(table, <em>CONST</em>, <em>FINAL</em>, true)</code>.
+Locks the table down, nothing can be changed. A good choice for
+module interfaces.
 </p>
 </dd>
 </dl></div>
 <div class="paragraph"><p>For to add strict checking to a table the tstrict constructor must be
-applied to a table.  This <em>tstrict</em> constructor will add or modify the
+applied to a table. This <em>tstrict</em> constructor will add or modify the
 metatable of the given table which check for validity of a value upon
 assignment.</p></div>
 <div class="paragraph"><p>The metatable gets functions for <em><em>index</em>, <em></em>newindex</em>, <em><em>len</em>,
-<em>'</em>ipairs</em> and <em>__pairs</em> added.  Further it adds the definiton keywords
+<em>'</em>ipairs</em> and <em>__pairs</em> added. Further it adds the definiton keywords
 <em>VAR</em>, <em>TYPED</em>, <em>CONST</em> and <em>CONSTRAIN</em> to the augmented table.</p></div>
 <div class="paragraph"><p>When tstrict is disabled, the definition keywords point to the table
 itself and no metatable is added.</p></div>
 </div>
 </div>
-<div class="sect2">
-<h3 id="_sequences">Sequences</h3>
+<div class="sect1">
+<h2 id="_sequences">Sequences</h2>
+<div class="sectionbody">
 <div class="paragraph"><p>Lua handles table members indexed by integers somewhat
 special. Internally tables have a <em>array</em> part which handles all
 values indexed continuously starting from 1. When indexing becomes
@@ -932,13 +935,25 @@ or <em>CONSTRAIN</em>). The array indices are tracked. Using the length
 operator on a sparse array will raise an error.</p></div>
 <div class="paragraph"><p>Note that once the indices become sparse there is no way back to
 making it continous again.</p></div>
+<div class="paragraph"><p>The lua table library handles such sequences with <em>raw</em> methods.  <em>tstrict</em>
+patches <em>table.insert</em>, <em>table.concat</em>, <em>table.remove</em>, <em>table.sort</em> and
+<em>table.unpack</em> to work correctly on strict tables as well.</p></div>
+<div class="paragraph"><p>For reference, the tstrict api retains the original functions as
+<em>table_insert</em>, <em>table_concat</em>, <em>table_remove</em>, <em>table_sort</em> and
+<em>table_unpack</em>. But these must not be used on strict tables.</p></div>
+<div class="paragraph"><p>Patching the table library is unconditionally done when tstrict is used this
+is necessary because tstrict can be enabled/disabled locally and every case
+needs to be covered.</p></div>
 </div>
-<div class="sect2">
-<h3 id="_example_usage">Example Usage</h3>
+</div>
+<div class="sect1">
+<h2 id="_example_usage">Example Usage</h2>
+<div class="sectionbody">
 <div class="paragraph"><p>The canonical usage looks like (including examples for failure):</p></div>
 <div class="listingblock">
 <div class="content">
 <pre><code>-- 1.
+local DEBUG = true
 local tstrict = require "tstrict" (DEBUG)
 
 local strict, typed, const, typed_def, const_def, final
@@ -1023,17 +1038,96 @@ when a values is accepted..
 </li>
 </ol></div>
 </div>
-<div class="sect2">
-<h3 id="_notes">Notes</h3>
+</div>
+<div class="sect1">
+<h2 id="_notes">Notes</h2>
+<div class="sectionbody">
 <div class="paragraph"><p>Tstrict is under development, features and API are still in flux but
 will eventually stabilize for a 1.0 version.</p></div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_limitations">Limitations</h2>
+<div class="sectionbody">
+<div class="ulist"><ul>
+<li>
+<p>
+Tstrict does not protect the metatables of augmented tables. This
+  would be hard to implement and the rationale here is that whoever
+  alters metatables knows what he is doing. In future some protections
+  may be implemented as much as feasible.
+</p>
+</li>
+<li>
+<p>
+Some low-level constructs like <em>setraw()</em> can not be incepted.
+  Use them wisely, same rationale as above.
+</p>
+</li>
+</ul></div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_license">License</h2>
+<div class="sectionbody">
+<div class="paragraph"><p><em>tstrict</em> is distributed under the MIT/X11 license as noted in the
+accompanied <em>COPYING</em> file.</p></div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_about_the_infrastructure">About The Infrastructure</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_issues">Issues</h3>
+<div class="paragraph"><p>For the time being send bug reports, feature suggestions and other
+issues by mail to "Christian Thäter &lt;<a href="mailto:ct.tstrict@pipapo.org">ct.tstrict@pipapo.org</a>&gt;".</p></div>
+</div>
+<div class="sect2">
+<h3 id="_git_repository">Git Repository</h3>
+<div class="paragraph"><p>The public git repository can be cloned by:</p></div>
+<div class="literalblock">
+<div class="content">
+<pre><code>git clone git://git.pipapo.org/tstrict</code></pre>
+</div></div>
+</div>
+<div class="sect2">
+<h3 id="_documentation">Documentation</h3>
+<div class="paragraph"><p>The Documentation in README.txt is written in asciidoc.
+To generate <em>README.html</em> use:</p></div>
+<div class="literalblock">
+<div class="content">
+<pre><code>asciidoc README.txt</code></pre>
+</div></div>
+<div class="paragraph"><p><em>README.html</em> is included in revision control and updated lazily.
+This makes the documentation available as webpage under:</p></div>
+<div class="literalblock">
+<div class="content">
+<pre><code>http://git.pipapo.org/?p=tstrict;a=blob_plain;f=README.html</code></pre>
+</div></div>
+<div class="paragraph"><p>To generate a PDF use:</p></div>
+<div class="literalblock">
+<div class="content">
+<pre><code>a2x -L -k -v --dblatex-opts "-P latex.output.revhistory=0" README.txt</code></pre>
+</div></div>
+</div>
+<div class="sect2">
+<h3 id="_testing">Testing</h3>
+<div class="paragraph"><p>There is a <em>test_tstrict.lua</em> included. Tests are coded ad-hoc and can
+be run by:</p></div>
+<div class="literalblock">
+<div class="content">
+<pre><code>lua test_tstrict.lua</code></pre>
+</div></div>
+<div class="paragraph"><p>and shall result in no errors/failures.</p></div>
+</div>
+</div>
 </div>
 </div>
 <div id="footnotes"><hr /></div>
 <div id="footer">
 <div id="footer-text">
 Last updated
- 2017-09-03 15:30:35 CEST
+ 2017-09-06 02:50:25 CEST
 </div>
 </div>
 </body>

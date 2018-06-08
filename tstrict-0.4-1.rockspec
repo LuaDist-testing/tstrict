@@ -1,16 +1,16 @@
 -- This file was automatically generated for the LuaDist project.
 
 package = "tstrict"
-version = "0.3.1-1"
+version = "0.4-1"
 -- LuaDist source
 source = {
-  tag = "0.3.1-1",
+  tag = "0.4-1",
   url = "git://github.com/LuaDist-testing/tstrict.git"
 }
 -- Original source
 -- source = {
 --    url = "git://git.pipapo.org/tstrict",
---    tag = "v0.3.1"
+--    tag = "v0.4"
 -- }
 description = {
    summary = "Yet Another Implementation For Lua Strict Tables",
@@ -22,7 +22,7 @@ A strictness checker for Lua. Variables must be initialized before being used. A
      'constrain' :: variables with an invariant function
 Can be disabled (on tested code) for performance improvement.]],
    homepage = "http://git.pipapo.org/?p=tstrict;a=summary",
-   license = "GNU GPL v2",
+   license = "MIT/X11",
    maintainer = "Christian Thäter <ct.tstrict@pipapo.org>"
 }
 dependencies = {

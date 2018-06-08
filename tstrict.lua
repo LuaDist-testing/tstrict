@@ -29,15 +29,10 @@ local keywords = {VAR = true, TYPED = true, CONSTRAIN = true, CONST = true}
 
 local function tstrict_enabled(tbl, initmode, default, force)
   local constants, typed, constrained = {},{},{}
-
-  -- array points to the table holding sequential 1..n entries
-  -- whenever the sequence becomes broken, it is set to nil
-  -- disabling the # operator.
-  -- when #array is 0 it may be reassignd to another mode.
-  local array
-
   local mt =  getmetatable (tbl) or {}
   setmetatable(tbl, mt)
+
+  mt.tstrict_final = default == 'FINAL'
 
   -- heuristic, should be good enough
   local function continous(t)
@@ -50,7 +45,7 @@ local function tstrict_enabled(tbl, initmode, default, force)
         end
       end
     end
-    return cnt == rawlen(t) and t
+    return cnt == rawlen(t) and t or false
   end
 
   -- for changing the strictness mode we must copy the members over
@@ -76,20 +71,20 @@ local function tstrict_enabled(tbl, initmode, default, force)
   end
 
   local function ipairs_array ()
-    return ipairs(array or {})
+    return ipairs(mt.tstrict_array or {})
   end
 
   if initmode == 'CONST' then
     mvtable(tbl, constants)
-    array = continous(constants)
+    mt.tstrict_array = continous(constants)
     mt.__ipairs = ipairs_array
   elseif initmode == 'TYPED' then
     mvtable(tbl, typed)
-    array = continous(typed)
+    mt.tstrict_array = continous(typed)
     mt.__ipairs = ipairs_array
   elseif type(initmode) == 'function' then
     mvtable(tbl, constrained)
-    array = continous(constrained)
+    mt.tstrict_array = continous(constrained)
     mt.__ipairs = ipairs_array
     for k,v in constrained do
         if tcall(initmode, v, k, tbl) then
@@ -110,7 +105,7 @@ local function tstrict_enabled(tbl, initmode, default, force)
         tbl[k] = v
       end
     end
-    array = continous(tbl)
+    mt.tstrict_array = continous(tbl)
   end
 
 
@@ -132,16 +127,16 @@ local function tstrict_enabled(tbl, initmode, default, force)
 
 
   local function arraycheck(k, t)
-    if array and type(k) == 'number' and k%1 == 0 then
-      if #array == 0 and k == 1 then
-        array = t
+    if mt.tstrict_array and type(k) == 'number' and k%1 == 0 then
+      if #mt.tstrict_array == 0 and k == 1 then
+        mt.tstrict_array = t
         if t ~= tbl then
           mt.__ipairs = ipairs_array
         end
-      elseif array ~= t then
+      elseif mt.tstrict_array ~= t then
         error("array definition mode", 3)
-      elseif k ~= #array+1 then
-        array = nil
+      elseif k ~= #mt.tstrict_array+1 then
+        mt.tstrict_array = false
       end
     end
   end
@@ -207,13 +202,13 @@ local function tstrict_enabled(tbl, initmode, default, force)
 
   function mt.__newindex (_,k,v)
 
-    if array
+    if mt.tstrict_array
       and v == nil
       and type(k) == 'number'
       and k%1 == 0
-      and k ~= #array
+      and k ~= #mt.tstrict_array
     then
-      array = nil
+      mt.tstrict_array = false
     end
 
     if default == 'FINAL' then
@@ -310,10 +305,10 @@ local function tstrict_enabled(tbl, initmode, default, force)
 
 
   function mt.__len ()
-    if not array then
+    if mt.tstrict_array == false then
       error("discontinous array", 2)
     end
-    return rawlen(array)
+    return rawlen(mt.tstrict_array)
   end
 
   return tbl
@@ -334,6 +329,46 @@ local function tstrict_disabled(tbl)
 end
 
 
+-- monkey patch the table library
+
+local function getarray(tbl, mut)
+  local mt = getmetatable(tbl)
+  if mt and mut and mt.tstrict_final then
+      error("readonly table", 3)
+  end
+  local array = mt and mt.tstrict_array
+  if array == false then
+    error("discontinous array", 3)
+  end
+  return array or tbl
+end
+
+local table_insert = table.insert
+function table.insert(tbl, ...)
+  table_insert(getarray(tbl, true), ...)
+end
+
+local table_concat = table.concat
+function table.concat (tbl, ...)
+  return table_concat(getarray(tbl), ...)
+end
+
+local table_remove = table.remove
+function table.remove (tbl, ...)
+  return table_remove(getarray(tbl, true), ...)
+end
+
+local table_sort = table.sort
+function table.sort (tbl, ...)
+  table_sort(getarray(tbl, true), ...)
+end
+
+local table_unpack = table.unpack
+function table.unpack (tbl, ...)
+  return table_unpack(getarray(tbl), ...)
+end
+
+
 return function (state, selector)
   local tstrict = state and tstrict_enabled or tstrict_disabled
 
@@ -347,6 +382,11 @@ return function (state, selector)
       typed_def = function (tbl) return tstrict(tbl, 'TYPED', 'TYPED') end,
       const_def = function (tbl) return tstrict(tbl, 'CONST', 'CONST') end,
       final = function (tbl) return tstrict(tbl, 'CONST', 'FINAL', true) end,
+      table_insert = table_insert,
+      table_concat = table_concat,
+      table_remove = table_remove,
+      table_sort = table_sort,
+      table_unpack = table_unpack,
     },
     'CONST', 'FINAL'
   )
