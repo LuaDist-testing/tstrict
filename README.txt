@@ -1,140 +1,205 @@
-PIPADOC:MAIN:
-
 Yet Another Implementation For Lua Strict Tables
-------------------------------------------------
+================================================
 
-'tstrict' makes member definitions (in tables) mandatory. Unlike other
-/strict/ modules it does not care about declarations but requires that
-members are actually initialized. This eases the implementation and
-(hopefully) leads to a cleaner coding style with less problematic
-cases. As a side effect assigning 'nil' to a variable will undefine it
-and any future use must redefine it.
+'tstrict' enforces modes on table members. New members must be defined
+with such a mode or a table can be constructed with a default
+definition mode.  Assigning 'nil' to a variable will undefine it and
+any future use must redefine it.
 
 Strictness checking can be disabled, Then the performance impact
 should be negligible. Even with strictness checking enabled, it is
-designed to have little performance impact.
+designed to have little performance impact (depending on the mode).
 
 All checks are have no side-effects when the program is correct and
 throw an 'error()' when a violation is detected.
 
-'tstrict' adds these forms of definitions:
+'tstrict' adds these modes:
 
 VAR::
   Like normal Lua variables, once defined it can be assigned to any
-  other value.
+  other value. Writing to undefined members will raise an error.
 
 TYPED::
-  Any assignment must have the same type than the current value or
-  'nil' for undefining it.
+  Any assignment must have the same type than the current value.
 
 CONST::
-  Once defined it can not be altered. Assigning nil to undefine a
-  value is is prohibited too.
+  Once defined it can not be altered.
 
 CONSTRAIN::
   Associates a test function to a member which checks for validity of
   a value upon assignment.
 
-For to enable strict checking the tstrict constructor must be applied
-to a table.  This 'tstrict' constructor will add or modify the
+FINAL::
+  Mark tables final will lock it's contents. All attempts changing
+  it (indcluding erasing memnbers) raise an error.
+
+Strict checking is applied to tables by calling an augmenting function
+from the tstrict module upon them. It is possible to change the tables
+mode by apply the function again (unless the table was marked as
+'final').
+
++tstrict.strict(table, init, default, force)+::
+  +init+:::
+    The definition mode for all members already existing in the table.
+    it can be nil, 'TYPED', 'CONST' or a Lua function for defining a
+    constraint.  'nil' means the most basic level of strictness
+    checking variables must be defined with '.VAR' but no other
+    restrictions are apply.
+
+  +default+:::
+    The default for new members. When 'nil' no default exists and
+    members must be explicit defined. 'TYPED', 'CONST' and a lua
+    function select the respective mode. 'FINAL' will reject adding
+    new members to the table.
+
+  +force+:::
+    Enforces the mode given as +default+ and disables explicit definitons
+    with the '.VAR', '.TYPED', '.CONST' or '.CONSTRAIN' keywords.
+
+  Returns 'table' augmented with strict checking.
+
+  In the simplest case, init and default are nil then strict
+  checking can be added like this:
+
+  +local my = strict {}+
+
+
++tstrict.typed(table)+::
+  Equivalent to +strict(table, 'TYPED')+.
+  Existing members become 'typed', new members must be explicitly
+  defined.
+
++tstrict.const(table)+::
+  Equivalent to +strict(table, 'CONST')+.
+  Existing members become 'const', new members must be explicitly
+  defined.
+
++tstrict.typed_def(table)+::
+  Equivalent to +strict(table, 'TYPED', 'TYPED')+.
+  Makes existing and new members 'typed' unless otherwise defined.
+
+  TIP: this is a good starting point for augmenting tables in
+  existing programs. It may catch type errors while being least
+  intrusive to existing codebases.
+
++tstrict.const_def(table)+::
+  Equivalent to +strict(table, 'CONST', 'CONST')+.
+  Allows easy adding new members to a table but no mutations.
+
++tstrict.final(table)+::
+  Equivalent to +strict(table, 'CONST', 'FINAL', true)+.
+  Locks the table down, nothing can be changed. A good choice for
+  module interfaces.
+
+For to add strict checking to a table the tstrict constructor must be
+applied to a table.  This 'tstrict' constructor will add or modify the
 metatable of the given table which check for validity of a value upon
 assignment.
 
 The metatable gets functions for '__index', '__newindex', '__len',
-''__ipairs' and '__pairs' added.  Further it adds the control keywords
+''__ipairs' and '__pairs' added.  Further it adds the definiton keywords
 'VAR', 'TYPED', 'CONST' and 'CONSTRAIN' to the augmented table.
 
-When tstrict is disabled, these keywords point to the table itself and
-no metatable is added.
+When tstrict is disabled, the definition keywords point to the table
+itself and no metatable is added.
 
-Arrays
-~~~~~~
+Sequences
+~~~~~~~~~
 
 Lua handles table members indexed by integers somewhat
 special. Internally tables have a 'array' part which handles all
-values indexed continuously starting from 1. When indexing is sparse
-values are stored in the 'hash' part of the table.
+values indexed continuously starting from 1. When indexing becomes
+sparse values are stored in the 'hash' part of the table.
 
-Mixing such continuous and sparse indexes is not a problem for Lua, but
-iterating with 'ipairs()' and the length operator ('#') only handle
-the continuous part of the array. Moreover using the '#' operator is
+Mixing such continuous and sparse indexes is not a problem for Lua,
+but iterating with 'ipairs()' and the length operator # only handle
+the continuous part of the array. Moreover using the # operator is
 undefined when the integer index becomes sparse.
 
 'tstrict' add the limitation on members indexed by integers that they
-all must be from the same kind of definition ('VAR', 'TYPED', 'CONST',
+all must be from the same mode of definition ('VAR', 'TYPED', 'CONST',
 or 'CONSTRAIN'). The array indices are tracked. Using the length
 operator on a sparse array will raise an error.
 
-Note that once the indices become sparse, this state is kept until
-/all/ integer indices are erased. Starting over with new indices
-may even choose a different kind of definitions.
-
-This tracking only works when the indices are defined as 'TYPED',
-'CONST', or 'CONSTRAIN' but not on 'VAR'. Thus 'VAR' definitions
-should be avoided when using sparse arrays.
+Note that once the indices become sparse there is no way back to
+making it continous again.
 
 
-Usage
-~~~~~
+Example Usage
+~~~~~~~~~~~~~
 
 The canonical usage looks like (including examples for failure):
 
- DEBUG = true
- local strict, var, typed, const, constrain = require "tstrict" (DEBUG)
+----
+-- 1.
+local DEBUG = true
+local tstrict = require "tstrict" (DEBUG)
 
- strict (_G)
+local strict, typed, const, typed_def, const_def, final
+       = tstrict.strict, tstrict.typed, tstrict.const,
+         tstrict.typed_def, tstrict.const_def, tstrict.final
 
- global_x = "foobar" --> FAIL, not defined
+-- 2.
+strict (_G)
 
- VAR.global_x = 10
- CONST.global_y = 20
- TYPED.global_z = 30
- print(global_x, global_y, global_z) --> 10 20 30
+-- 3.
+x = "foobar" --> FAIL, not defined
 
- global_x = "foo"  --> OK
- global_y = "bar"  --> FAIL, constant value
- global_z = "baz"  --> FAIL, type error
+VAR.x = 10
+CONST.y = 20
+TYPED.z = 30
+print(x, y, z) --> 10 20 30
 
- local my = strict {}
- my.VAR.local_x = 40
- my.CONST.local_y = 50
- my.TYPED.local_z = 60
- print(my.local_x, my.local_y, my.local_z) --> 40 50 60
+x = "foo"  --> OK
+y = "bar"  --> FAIL, constant value
+z = "baz"  --> FAIL, type error
 
- my.local_z = nil
- my.CONSTRAIN.local_z = {"foo", function (x) return x:match("^...$" end)}
- my.local_z = "baz"  --> OK, matches constraint
- my.local_z = "barf" --> FAIL, constraint error
+-- 4.
+VAR.x = 10  --> OK, redefiniton with same value
+VAR.x = 11  --> FAIL, already defined
 
-The tstrict module returns a function which takes one boolean argument
-to enable/disable the checking. This function in turn returns a list
-of functions.
+-- 5.
+local my = strict {}
+my.VAR.x = 40
+my.CONST.y = 50
+my.TYPED.z = 60
+print(my.x, my.y, my.z) --> 40 50 60
 
-First 'strict(table[, default [, constraint_function])', the generic
-strictness function which augments the given table with strictness
-checking. 'default' can be 'TYPED', 'CONST' or 'CONSTRAIN' and applies
-to existing members in the table. When 'CONSTRAIN' is chosen, a
-'constraint_function' must be given. This function then applies to all
-static initialized members.
+-- 6.
+my.z = nil
+my.CONSTRAIN.z = {"foo", function (x) return x:match("^...$" end)}
+my.z = "baz"  --> OK, matches constraint
+my.z = "barf" --> FAIL, constraint error
+----
 
-Following in the list are functions for 'var', 'typed', 'const',
-'constrain' which are shorthand for calling the generic 'strict'.
+1. The tstrict module returns a function which takes one boolean
+argument to enable/disable the checking. This function in turn returns
+a the tstrict interface:
 
-Then strict checking is explicitly applied to the '_G' global table.
+2. Then strict checking is explicitly applied to the '_G' global table.
 
-From there on global variables must be defined with 'VAR.', 'TYPED.',
-'CONST.' or 'CONSTRAIN.' prefixes. after definition they can be used
-as any other variable as long the constraints are not violated. Note
-that variables *must* be initialized.  Redefining a variable without
-erasing it first yields an error.
+3. From there on global variables must be defined with 'VAR.',
+'TYPED.', 'CONST.' or 'CONSTRAIN.' prefixes. After definition they can
+be used like any other member as long the constraints are not
+violated.
 
-'tstrict' only applies to tables, due to Lua limitations it can not
+4. Redefining a variable without erasing it first yields an error
+unless it is redefined with exactly the same value (to make the
++x.VAR = x or init+ idiom work)
+
+5. 'tstrict' only applies to tables, due to Lua limitations it can not
 check single local assignment. To facilitate strict checking on local
 variables these need to be table members as shown with the 'local my =
 strict {}' idiom.
 
-Finally the example shows how to use undefine a variable and then
+6. Finally the example shows how to use undefine a variable and then
 define it anew with 'CONSTRAIN' function. Such an definition takes a
 {value, func(value, key, table)} pair as parameter and must return 'true'
 when a values is accepted..
 
+
+Notes
+~~~~~
+
+Tstrict is under development, features and API are still in flux but
+will eventually stabilize for a 1.0 version.

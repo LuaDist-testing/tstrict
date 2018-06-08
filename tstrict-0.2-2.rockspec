@@ -1,17 +1,9 @@
--- This file was automatically generated for the LuaDist project.
-
 package = "tstrict"
 version = "0.2-2"
--- LuaDist source
 source = {
-  tag = "0.2-2",
-  url = "git://github.com/LuaDist-testing/tstrict.git"
+   url = "git://git.pipapo.org/tstrict",
+   branch = "v0.2"
 }
--- Original source
--- source = {
---    url = "git://git.pipapo.org/tstrict",
---    branch = "v0.2"
--- }
 description = {
    summary = "Yet Another Implementation For Lua Strict Tables",
    detailed = [[
